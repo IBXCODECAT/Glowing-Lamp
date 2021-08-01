@@ -5,14 +5,15 @@
 
 #define PIN 6
 
-#define NUMPIXELS 120
-#define BRIGHT 150
+#define NUMPIXELS 180
+#define BRIGHT 125
+#define OFF 0
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
 #define DELAYVAL 5 // Time (in milliseconds) to pause between pixels
 
-int pixelsEditable = 120;
+int pixelsEditable = NUMPIXELS;
 
 void setup() {
   // These lines are specifically to support the Adafruit Trinket 5V 16 MHz.
@@ -27,38 +28,47 @@ void setup() {
 }
 
 void loop() {
-  Rainbow(1);
-  Rainbow(1);
-  Rainbow(1);
-  RainbowTrans(75, 2);
-  TheaterChaseRainbow(75);
-  TheaterChaseRainbow(75);
-  TheaterChaseRainbow(75);
-  Wipe(BRIGHT / 2, BRIGHT / 2, BRIGHT / 2);
-  Stack(2, 1);
+  WipeStack(12, 0, BRIGHT, 0, 0, 20);
   
 }
 
-void Rainbow(int wait) {
-  for(long firstPixelHue = 0; firstPixelHue < 5*65536; firstPixelHue += 256)
-  {
-    for(int i=0; i<pixels.numPixels(); i++)
-    {
-      int pixelHue = firstPixelHue + (i * 65536L / pixels.numPixels());
-      pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(pixelHue)));
-    }
-    
-    pixels.show();
-    delay(wait);
-  }
+void WipeStack(int len, float wait, int R, int G, int B, short compact)
+{
+  Stack(len, wait, BRIGHT, 0, 0);
+  Trans(75, 2);
+  TheaterChase(50, BRIGHT, 0, 0);
+  Wipe(BRIGHT, BRIGHT, 0, compact);
+  Stack(len, wait, BRIGHT, BRIGHT, 0);
+  Trans(75, 2);
+  TheaterChase(50, BRIGHT, BRIGHT, 0);
+  Wipe(0, BRIGHT, 0, compact);
+  Stack(len, wait, 0, BRIGHT, 0);
+  Trans(75, 2);
+  TheaterChase(50, 0, BRIGHT, 0);
+  Wipe(0, BRIGHT, BRIGHT, compact);
+  Stack(len, wait, 0, 0, BRIGHT);
+  Trans(75, 2);
+  TheaterChase(50, 0, BRIGHT, BRIGHT);
+  Wipe(0, 0, BRIGHT, compact);
+  Stack(len, wait, 0, 0, BRIGHT);
+  Trans(75, 2);
+  TheaterChase(50, 0, 0, BRIGHT);
+  Wipe(BRIGHT, 0, BRIGHT, compact);
+  Stack(len, wait, BRIGHT, 0, BRIGHT);
+  Trans(75, 2);
+  TheaterChase(50, BRIGHT, 0, BRIGHT);
+  Wipe(BRIGHT, 0, BRIGHT, compact);
+  RainbowStack(len / 4, 0);
+  Trans(75, 2);
+  TheaterChaseRainbow(75, 1);
 }
 
-void RainbowTrans(short delayTime, short diff)
+void Trans(short delayTime, short diff)
 {
   for(int i = 0; i < pixels.numPixels(); i++)
   {
-    pixels.setPixelColor(i, pixels.Color(0, 0, 0));
-    pixels.setPixelColor(i + 1, pixels.Color(0, 0, 0));
+    pixels.setPixelColor(i, pixels.Color(OFF, OFF, OFF));
+    pixels.setPixelColor(i + 1, pixels.Color(OFF, OFF, OFF));
     pixels.show();
     delay(delayTime);
 
@@ -67,7 +77,7 @@ void RainbowTrans(short delayTime, short diff)
 }
 
 
-void TheaterChaseRainbow(int wait) {
+void TheaterChase(int wait, int R, int G, int B) {
   int firstPixelHue = 0;
   
   for(int a=0; a<30; a++)
@@ -78,7 +88,27 @@ void TheaterChaseRainbow(int wait) {
       
       for(int c=b; c<pixels.numPixels(); c += 3)
       {
-        int      hue   = firstPixelHue + c * 65536L / pixels.numPixels();
+        pixels.setPixelColor(c, pixels.Color(R, G, B));
+      }
+      
+      pixels.show();
+      delay(wait);
+    }
+  }
+}
+
+void TheaterChaseRainbow(int wait, int compact) {
+  int firstPixelHue = 0;
+  
+  for(int a=0; a<30; a++)
+  {
+    for(int b=0; b<3; b++)
+    {
+      pixels.clear();
+      
+      for(int c=b; c<pixels.numPixels(); c += 3)
+      {
+        int      hue   = firstPixelHue + c * 65536L / pixels.numPixels() * compact;
         uint32_t color = pixels.gamma32(pixels.ColorHSV(hue)); // hue -> RGB
         pixels.setPixelColor(c, color);
       }
@@ -90,94 +120,87 @@ void TheaterChaseRainbow(int wait) {
   }
 }
 
-void Wipe(int R, int G, int B)
+void Wipe(int R, int G, int B, short compact)
 {
+  int cut = pixelsEditable / compact;
+    
   for(int i=0; i<pixelsEditable; i++) { // For each pixel...
     // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
     
     pixels.setPixelColor(i, pixels.Color(R, G, B));
-
+    pixels.setPixelColor(i - cut, pixels.Color(OFF, OFF, OFF));
     pixels.show();   // Send the updated pixel colors to the hardware.
 
     delay(DELAYVAL); // Pause before next pass through loop
   }
 
-  for(int i=0; i<pixelsEditable; i++) { // For each pixel...
-    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
-    
-    pixels.setPixelColor(i, pixels.Color(0, 0, 0));
+  for(int i = pixelsEditable - cut; i < pixelsEditable; i++)
+  {
+    pixels.setPixelColor(i, pixels.Color(OFF, OFF, OFF));
+    pixels.show();
 
-    pixels.show();   // Send the updated pixel colors to the hardware.
-
-    delay(DELAYVAL); // Pause before next pass through loop
+    delay(DELAYVAL);
   }
 }
 
-void Stack(int barLength, float wait)
+void Stack(int barLength, float wait, int R, int G, int B)
 {
   while(true)
   {
-
-    int red = random(0, 3);
-    int green = random(0, 3);
-    int blue = random(0, 3);
-
-    bool useCertain = false;
-    
-    int redVal; int greenVal; int blueVal;
-
-      
-    if(red == 0 and green == 0 and blue == 0)
-    {
-      useCertain = true;
-    }
-
-    if(red == 1 and green == 1 and blue == 1)
-    {
-      useCertain = true;
-    }
-    
-    if(red == 2 and green == 2 and blue == 2)
-    {
-      useCertain = true;
-    }
-    
-
-    if(not useCertain)
-    {
-      redVal = red * BRIGHT;
-      greenVal = green * BRIGHT;
-      blueVal = blue * BRIGHT;
-    }
-    else
-    {
-      int certainColor = random(0, 3);
-
-      switch(certainColor)
-      {
-        case 0:
-          redVal = BRIGHT * random(1, 3);
-          break;
-
-        case 1:
-          greenVal = BRIGHT * random(1, 3);
-          break;
-
-        case 2:
-          blueVal = BRIGHT * random(1, 3);
-          break;
-      }
-    }
-    
     for(int i=0; i<pixelsEditable; i++) { // For each pixel...
       // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
       
-      pixels.setPixelColor(i, pixels.Color(redVal, greenVal, blueVal));
-      pixels.setPixelColor(i-barLength, pixels.Color(0, 0, 0));
+      pixels.setPixelColor(i, pixels.Color(R, G, B));
+      pixels.setPixelColor(i-barLength, pixels.Color(OFF, OFF, OFF));
   
       pixels.show();   // Send the updated pixel colors to the hardware.
   
       delay(wait); // Pause before next pass through loop
+    }
+  
+    pixelsEditable -= barLength;
+  
+    if(pixelsEditable < 0)
+    {
+      pixelsEditable = NUMPIXELS;
+      break;
+    }
+  }
+}
+
+void RainbowStack(int barLength, float wait)
+{
+  int count = 0;
+  
+  int reds[6] = {BRIGHT, BRIGHT, 0, 0, 0, BRIGHT};
+  int greens[6] = {0, BRIGHT, BRIGHT, BRIGHT, 0, 0};
+  int blues[6] = {0, 0, 0, BRIGHT, BRIGHT, BRIGHT};
+  
+  while(true)
+  {
+    
+    for(int i=0; i<pixelsEditable; i++) { // For each pixel...
+      // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
+
+      int R = reds[count];
+      int G = greens[count];
+      int B = blues[count];
+          
+      pixels.setPixelColor(i, pixels.Color(R, G, B));
+      pixels.setPixelColor(i-barLength, pixels.Color(OFF, OFF, OFF));
+  
+      pixels.show();   // Send the updated pixel colors to the hardware.
+  
+      delay(wait); // Pause before next pass through loop
+    }
+
+    if(count > 4) //IDK why the hell I do this but it works so ya
+    {
+      count = 0;
+    }
+    else
+    {
+      count++;
     }
   
     pixelsEditable -= barLength;
