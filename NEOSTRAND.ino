@@ -6,7 +6,7 @@
 #define PIN 6
 
 #define NUMPIXELS 180
-#define BRIGHT 125
+#define BRIGHT 75
 #define OFF 0
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
@@ -34,33 +34,35 @@ void loop() {
 
 void WipeStack(int len, float wait, int R, int G, int B, short compact)
 {
-  Stack(len, wait, BRIGHT, 0, 0);
-  Trans(75, 2);
-  TheaterChase(50, BRIGHT, 0, 0);
-  Wipe(BRIGHT, BRIGHT, 0, compact);
-  Stack(len, wait, BRIGHT, BRIGHT, 0);
-  Trans(75, 2);
-  TheaterChase(50, BRIGHT, BRIGHT, 0);
-  Wipe(0, BRIGHT, 0, compact);
-  Stack(len, wait, 0, BRIGHT, 0);
-  Trans(75, 2);
-  TheaterChase(50, 0, BRIGHT, 0);
-  Wipe(0, BRIGHT, BRIGHT, compact);
-  Stack(len, wait, 0, 0, BRIGHT);
-  Trans(75, 2);
-  TheaterChase(50, 0, BRIGHT, BRIGHT);
-  Wipe(0, 0, BRIGHT, compact);
-  Stack(len, wait, 0, 0, BRIGHT);
-  Trans(75, 2);
-  TheaterChase(50, 0, 0, BRIGHT);
-  Wipe(BRIGHT, 0, BRIGHT, compact);
-  Stack(len, wait, BRIGHT, 0, BRIGHT);
-  Trans(75, 2);
-  TheaterChase(50, BRIGHT, 0, BRIGHT);
-  Wipe(BRIGHT, 0, BRIGHT, compact);
-  RainbowStack(len / 4, 0);
-  Trans(75, 2);
-  TheaterChaseRainbow(75, 1);
+  Stack(len, wait, BRIGHT, 0, 0); //Red stack
+  Trans(75, 2); //Trans
+  TheaterChase(50, BRIGHT, 0, 0); //Red chase
+  Wipe(BRIGHT, BRIGHT, 0, compact); //Yellow wipe
+  Stack(len, wait, BRIGHT, BRIGHT, 0); //Yellow stack
+  Trans(75, 2); //Trans
+  TheaterChase(50, BRIGHT, BRIGHT, 0); //Yellow chase
+  Wipe(0, BRIGHT, 0, compact); //Green wipe
+  Stack(len, wait, 0, BRIGHT, 0); //Green stack
+  Trans(75, 2); //Trans
+  TheaterChase(50, 0, BRIGHT, 0); //Green chase
+  Wipe(0, BRIGHT, BRIGHT, compact); //Cyan Wipe
+  Stack(len, wait, 0, BRIGHT, BRIGHT); //Cyan stack
+  Trans(75, 2); //Trans
+  TheaterChase(50, 0, BRIGHT, BRIGHT); //Cyan chase
+  Wipe(0, 0, BRIGHT, compact); //Blue wipe
+  Stack(len, wait, 0, 0, BRIGHT); //Blue stack
+  Trans(75, 2); //Trans
+  TheaterChase(50, 0, 0, BRIGHT); //Blue chase
+  Wipe(BRIGHT, 0, BRIGHT, compact); //Magenta wipe
+  Stack(len, wait, BRIGHT, 0, BRIGHT); //Magenta stack
+  Trans(75, 2); //Trans
+  TheaterChase(50, BRIGHT, 0, BRIGHT); //Magenta chase
+
+  
+  Wipe(BRIGHT, BRIGHT, BRIGHT, compact); //White wipe
+  RainbowStack(len / 4, 0); //Rainbow stack
+  Trans(75, 2); //Trans
+  TheaterChaseRainbow(75, 1); //Rainbow chase
 }
 
 void Trans(short delayTime, short diff)
